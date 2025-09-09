@@ -122,6 +122,7 @@
                 <button id="validateBtn" class="btn btn-secondary">Validar Puzzle</button>
                 <button id="testBtn" class="btn btn-primary" disabled>Testar Puzzle</button>
                 <button id="shareBtn" class="btn btn-success" disabled>Partilhar Puzzle</button>
+                <button id="submitBtn" class="btn btn-warning" disabled>Submeter para Aprovação</button>
                 <button id="clearBtn" class="btn btn-danger">Limpar Tudo</button>
             </div>
 
@@ -167,6 +168,48 @@
                     <button id="copyLinkBtn" class="btn btn-primary">Copiar Link</button>
                 </div>
                 <p class="share-note">Este link irá carregar o teu puzzle personalizado para qualquer pessoa jogar!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Modal -->
+    <div class="modal" id="submitModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Submeter Puzzle para Aprovação</h2>
+                <button class="close-btn" id="closeSubmitModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>O teu puzzle será analisado por moderadores antes de ser aprovado para a comunidade.</p>
+                
+                <div class="form-group">
+                    <label for="creatorName">Nome (opcional):</label>
+                    <input type="text" id="creatorName" placeholder="Como queres ser creditado?" maxlength="50">
+                </div>
+                
+                <div class="form-group">
+                    <label for="creatorEmail">Email (opcional):</label>
+                    <input type="email" id="creatorEmail" placeholder="Para receberes atualizações sobre o teu puzzle" maxlength="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="puzzleTitle">Título do Puzzle (opcional):</label>
+                    <input type="text" id="puzzleTitle" placeholder="Um nome especial para o teu puzzle" maxlength="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="puzzleDescription">Descrição (opcional):</label>
+                    <textarea id="puzzleDescription" placeholder="Alguma informação extra sobre o puzzle..." maxlength="500" rows="3"></textarea>
+                </div>
+                
+                <div class="submission-note">
+                    <strong>Nota:</strong> Puzzles com conteúdo ofensivo, incorreto ou de baixa qualidade serão rejeitados.
+                </div>
+                
+                <div class="modal-actions">
+                    <button id="cancelSubmit" class="btn btn-secondary">Cancelar</button>
+                    <button id="confirmSubmit" class="btn btn-warning">Submeter Puzzle</button>
+                </div>
             </div>
         </div>
     </div>

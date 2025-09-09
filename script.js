@@ -462,14 +462,9 @@ class ConnectionsGame {
             card.classList.add('disabled');
         });
 
-        // Show all remaining groups if lost
+        // Don't show remaining groups immediately if lost - wait for user to click reveal button
         if (!won) {
-            this.currentPuzzle.groups.forEach(group => {
-                if (!this.solvedGroups.includes(group)) {
-                    this.solvedGroups.push(group);
-                }
-            });
-            this.renderSolvedGroups();
+            this.showMessage('Não conseguiste resolver o puzzle! Clica em "Ver Solução" para revelar as respostas.', 'error');
         }
 
         // Show modal
@@ -483,11 +478,68 @@ class ConnectionsGame {
         const title = document.getElementById('gameOverTitle');
         const finalGroups = document.getElementById('finalGroups');
 
-        title.textContent = won ? 'Parabéns! Completaste o puzzle!' : 'Jogo Terminado!';
+        if (won) {
+            title.textContent = 'Parabéns! Completaste o puzzle!';
+            // Show all groups in final results for won games
+            finalGroups.innerHTML = '';
+            this.currentPuzzle.groups.forEach(group => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = `solved-group difficulty-${group.difficulty}`;
+                groupDiv.innerHTML = `
+                    <div class="group-category">${group.category}</div>
+                    <div class="group-words">${group.words.join(', ')}</div>
+                `;
+                finalGroups.appendChild(groupDiv);
+            });
+        } else {
+            title.textContent = 'Não conseguiste resolver!';
+            // For lost games, show only solved groups initially and add a reveal button
+            finalGroups.innerHTML = '';
+            
+            // Show only solved groups
+            this.solvedGroups.forEach(group => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = `solved-group difficulty-${group.difficulty}`;
+                groupDiv.innerHTML = `
+                    <div class="group-category">${group.category}</div>
+                    <div class="group-words">${group.words.join(', ')}</div>
+                `;
+                finalGroups.appendChild(groupDiv);
+            });
+            
+            // Add reveal solution button if there are unsolved groups
+            const unsolvedGroups = this.currentPuzzle.groups.filter(group => 
+                !this.solvedGroups.includes(group)
+            );
+            
+            if (unsolvedGroups.length > 0) {
+                const revealBtn = document.createElement('button');
+                revealBtn.className = 'btn btn-secondary reveal-btn';
+                revealBtn.textContent = 'Ver Solução';
+                revealBtn.style.marginBottom = '20px';
+                revealBtn.addEventListener('click', () => this.revealSolution());
+                finalGroups.appendChild(revealBtn);
+            }
+        }
+
+        modal.classList.add('show');
+    }
+
+    revealSolution() {
+        const finalGroups = document.getElementById('finalGroups');
         
-        // Show all groups in final results
-        finalGroups.innerHTML = '';
-        this.currentPuzzle.groups.forEach(group => {
+        // Remove the reveal button
+        const revealBtn = finalGroups.querySelector('.reveal-btn');
+        if (revealBtn) {
+            revealBtn.remove();
+        }
+        
+        // Show all remaining unsolved groups
+        const unsolvedGroups = this.currentPuzzle.groups.filter(group => 
+            !this.solvedGroups.includes(group)
+        );
+        
+        unsolvedGroups.forEach(group => {
             const groupDiv = document.createElement('div');
             groupDiv.className = `solved-group difficulty-${group.difficulty}`;
             groupDiv.innerHTML = `
@@ -496,8 +548,14 @@ class ConnectionsGame {
             `;
             finalGroups.appendChild(groupDiv);
         });
-
-        modal.classList.add('show');
+        
+        // Also render these groups in the main game area
+        unsolvedGroups.forEach(group => {
+            if (!this.solvedGroups.includes(group)) {
+                this.solvedGroups.push(group);
+            }
+        });
+        this.renderSolvedGroups();
     }
 
     newGame() {

@@ -12,9 +12,14 @@ class AdminInterface {
 
     initializeEventListeners() {
         // Authentication form
-        const authForm = document.getElementById('authForm');
+        const authForm = document.getElementById('loginForm'); // Fixed: was 'authForm'
         if (authForm) {
-            authForm.addEventListener('submit', (e) => this.handleLogin(e));
+            authForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // Prevent page reload
+                e.stopPropagation(); // Stop event bubbling
+                this.handleLogin(e);
+                return false; // Extra prevention
+            });
         }
 
         // Logout button
@@ -26,46 +31,24 @@ class AdminInterface {
         // Refresh button
         const refreshBtn = document.getElementById('refreshBtn');
         if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => this.loadSubmissions());
+            refreshBtn.addEventListener('click', () => this.refreshDashboard());
         }
 
         // Filter select
-        const filterStatus = document.getElementById('filterStatus');
+        const filterStatus = document.getElementById('statusFilter');
         if (filterStatus) {
             filterStatus.addEventListener('change', () => this.applyFilters());
         }
 
-        // Modal close
-        const modal = document.getElementById('reviewModal');
-        const closeBtn = modal?.querySelector('.close-btn');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closeModal());
-        }
-
-        // Click outside modal to close
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    this.closeModal();
-                }
-            });
-        }
-
-        // Review actions
-        const approveBtn = document.getElementById('approveBtn');
-        const rejectBtn = document.getElementById('rejectBtn');
-        if (approveBtn) {
-            approveBtn.addEventListener('click', () => this.approveSubmission());
-        }
-        if (rejectBtn) {
-            rejectBtn.addEventListener('click', () => this.rejectSubmission());
-        }
     }
 
     async checkAuthenticationStatus() {
         try {
+            console.log('Checking authentication status...');
             // Check if user is already authenticated
             const user = await this.api.getCurrentUser();
+            console.log('Current user check result:', user);
+            
             if (user) {
                 this.currentUser = user;
                 this.showAdminPanel();
@@ -82,23 +65,54 @@ class AdminInterface {
     async handleLogin(event) {
         event.preventDefault();
         
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        const email = document.getElementById('adminEmail').value.trim(); // Fixed: was 'email'
+        const password = document.getElementById('adminPassword').value; // Fixed: was 'password'
         const messageDiv = document.getElementById('authMessage');
 
+        if (!email || !password) {
+            this.showMessage(messageDiv, 'Por favor, preencha email e password.', 'error');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'A verificar...';
+        submitBtn.disabled = true;
+
         try {
+            console.log('Attempting login for:', email);
             const user = await this.api.login(email, password);
+            
             if (user) {
                 this.currentUser = user;
                 this.showMessage(messageDiv, 'Login realizado com sucesso!', 'success');
+                console.log('Login successful:', user);
+                
                 setTimeout(() => {
                     this.showAdminPanel();
                     this.loadDashboard();
                 }, 1000);
+            } else {
+                throw new Error('Falha na autenticação');
             }
         } catch (error) {
             console.error('Login failed:', error);
-            this.showMessage(messageDiv, 'Credenciais inválidas. Tente novamente.', 'error');
+            let errorMessage = 'Credenciais inválidas. Tente novamente.';
+            
+            if (error.message.includes('not authorized as admin')) {
+                errorMessage = 'Esta conta não tem permissões de administrador.';
+            } else if (error.message.includes('Invalid password')) {
+                errorMessage = 'Password incorreta. Tente: admin123, password, 123456, ou admin';
+            } else if (error.message.includes('Failed to verify admin status')) {
+                errorMessage = 'Erro ao verificar permissões. Tente novamente.';
+            }
+            
+            this.showMessage(messageDiv, errorMessage, 'error');
+        } finally {
+            // Restore button state
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
         }
     }
 
@@ -126,6 +140,20 @@ class AdminInterface {
         container.innerHTML = `<div class="auth-message ${type}">${message}</div>`;
     }
 
+    async refreshDashboard() {
+        console.log('Refreshing dashboard...');
+        try {
+            // Refresh both stats and submissions while preserving filter
+            await Promise.all([
+                this.loadStats(),
+                this.loadSubmissions()
+            ]);
+            console.log('Dashboard refreshed successfully');
+        } catch (error) {
+            console.error('Error refreshing dashboard:', error);
+        }
+    }
+
     async loadDashboard() {
         try {
             // Load submissions and stats
@@ -142,10 +170,11 @@ class AdminInterface {
         try {
             const stats = await this.api.getStats();
             
-            document.getElementById('totalSubmissions').textContent = stats.total || 0;
-            document.getElementById('pendingSubmissions').textContent = stats.pending || 0;
-            document.getElementById('approvedSubmissions').textContent = stats.approved || 0;
-            document.getElementById('rejectedSubmissions').textContent = stats.rejected || 0;
+            document.getElementById('totalCount').textContent = stats.total || 0;
+            document.getElementById('pendingCount').textContent = stats.pending || 0;
+            document.getElementById('approvedCount').textContent = stats.approved || 0;
+            // Note: There's no rejectedCount element in the HTML, so we skip it
+            console.log('Stats loaded:', stats);
         } catch (error) {
             console.error('Failed to load stats:', error);
         }
@@ -159,7 +188,9 @@ class AdminInterface {
             }
 
             this.submissions = await this.api.getSubmissions();
-            this.renderSubmissions();
+            
+            // Apply current filter after loading submissions
+            this.applyFilters();
             
             if (loadingIndicator) {
                 loadingIndicator.style.display = 'none';
@@ -174,7 +205,7 @@ class AdminInterface {
     }
 
     applyFilters() {
-        const filterStatus = document.getElementById('filterStatus').value;
+        const filterStatus = document.getElementById('statusFilter').value;
         
         let filteredSubmissions = this.submissions;
         
@@ -199,13 +230,9 @@ class AdminInterface {
 
         // Add event listeners for action buttons
         submissions.forEach(submission => {
-            const reviewBtn = document.getElementById(`review-${submission.id}`);
             const quickApproveBtn = document.getElementById(`approve-${submission.id}`);
             const quickRejectBtn = document.getElementById(`reject-${submission.id}`);
 
-            if (reviewBtn) {
-                reviewBtn.addEventListener('click', () => this.openReviewModal(submission));
-            }
             if (quickApproveBtn) {
                 quickApproveBtn.addEventListener('click', () => this.quickApprove(submission.id));
             }
@@ -251,9 +278,8 @@ class AdminInterface {
                     <div class="submission-info">
                         <h3>${submission.title || 'Sem título'}</h3>
                         <div class="submission-meta">
-                            Por: ${submission.creator_name || 'Anônimo'} • 
+                            Por: ${submission.submitted_by || 'Anónimo'} • 
                             Submetido em: ${submittedDate}
-                            ${submission.creator_email ? ` • ${submission.creator_email}` : ''}
                         </div>
                     </div>
                     <span class="submission-status ${statusClass}">${statusText}</span>
@@ -266,9 +292,6 @@ class AdminInterface {
                 </div>
                 
                 <div class="submission-actions">
-                    <button class="btn btn-primary btn-sm" id="review-${submission.id}">
-                        Revisar
-                    </button>
                     ${submission.status === 'pending' ? `
                         <button class="btn btn-success btn-sm" id="approve-${submission.id}">
                             Aprovar
@@ -280,39 +303,6 @@ class AdminInterface {
                 </div>
             </div>
         `;
-    }
-
-    openReviewModal(submission) {
-        this.currentReview = submission;
-        
-        // Populate modal with submission data
-        document.getElementById('reviewTitle').textContent = submission.title || 'Sem título';
-        document.getElementById('reviewCreator').textContent = 
-            `Por: ${submission.creator_name || 'Anônimo'}`;
-        
-        const puzzleData = typeof submission.puzzle_data === 'string' 
-            ? JSON.parse(submission.puzzle_data) 
-            : submission.puzzle_data;
-            
-        document.getElementById('reviewPuzzle').innerHTML = this.createDetailedPreview(puzzleData);
-        
-        // Set current status
-        const statusSelect = document.getElementById('reviewStatus');
-        statusSelect.value = submission.status;
-        
-        // Set admin notes if any
-        const notesTextarea = document.getElementById('adminNotes');
-        notesTextarea.value = submission.admin_notes || '';
-        
-        // Show/hide action buttons based on status
-        const approveBtn = document.getElementById('approveBtn');
-        const rejectBtn = document.getElementById('rejectBtn');
-        
-        approveBtn.style.display = submission.status !== 'approved' ? 'block' : 'none';
-        rejectBtn.style.display = submission.status !== 'rejected' ? 'block' : 'none';
-        
-        // Show modal
-        document.getElementById('reviewModal').classList.add('show');
     }
 
     createDetailedPreview(puzzleData) {
@@ -328,46 +318,6 @@ class AdminInterface {
                 <div class="preview-words">${group.words.join(', ')}</div>
             </div>
         `).join('');
-    }
-
-    closeModal() {
-        document.getElementById('reviewModal').classList.remove('show');
-        this.currentReview = null;
-    }
-
-    async approveSubmission() {
-        if (!this.currentReview) return;
-        
-        const adminNotes = document.getElementById('adminNotes').value;
-        
-        try {
-            await this.api.updateSubmissionStatus(this.currentReview.id, 'approved', adminNotes);
-            this.closeModal();
-            await this.loadDashboard(); // Refresh data
-        } catch (error) {
-            console.error('Failed to approve submission:', error);
-            alert('Erro ao aprovar submissão. Tente novamente.');
-        }
-    }
-
-    async rejectSubmission() {
-        if (!this.currentReview) return;
-        
-        const adminNotes = document.getElementById('adminNotes').value;
-        
-        if (!adminNotes.trim()) {
-            alert('Por favor, forneça um motivo para a rejeição nas notas administrativas.');
-            return;
-        }
-        
-        try {
-            await this.api.updateSubmissionStatus(this.currentReview.id, 'rejected', adminNotes);
-            this.closeModal();
-            await this.loadDashboard(); // Refresh data
-        } catch (error) {
-            console.error('Failed to reject submission:', error);
-            alert('Erro ao rejeitar submissão. Tente novamente.');
-        }
     }
 
     async quickApprove(submissionId) {
@@ -398,9 +348,17 @@ class AdminInterface {
 
 // Initialize admin interface when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, checking for admin elements...');
     // Check if we're on the admin page
-    if (document.getElementById('adminContainer')) {
+    const authSection = document.getElementById('authSection');
+    if (authSection) {
+        console.log('Admin page detected, initializing admin interface...');
         new AdminInterface();
+    } else {
+        console.log('Admin elements not found - not on admin page');
+        console.log('Available elements with IDs:', 
+            Array.from(document.querySelectorAll('[id]')).map(el => el.id)
+        );
     }
 });
 

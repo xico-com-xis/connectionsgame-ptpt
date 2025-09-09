@@ -48,11 +48,18 @@ class PuzzleCreator {
         document.getElementById('validateBtn').addEventListener('click', () => this.validatePuzzle(true));
         document.getElementById('testBtn').addEventListener('click', () => this.testPuzzle());
         document.getElementById('shareBtn').addEventListener('click', () => this.sharePuzzle());
+        document.getElementById('submitBtn').addEventListener('click', () => this.showSubmissionModal());
         document.getElementById('clearBtn').addEventListener('click', () => this.clearAll());
 
         // Modal close buttons
         document.getElementById('closeTestModal').addEventListener('click', () => this.closeModal('testModal'));
         document.getElementById('closeShareModal').addEventListener('click', () => this.closeModal('shareModal'));
+        document.getElementById('closeSubmitModal').addEventListener('click', () => this.closeModal('submitModal'));
+        document.getElementById('copyLinkBtn').addEventListener('click', () => this.copyShareLink());
+
+        // Submission modal buttons
+        document.getElementById('cancelSubmit').addEventListener('click', () => this.closeModal('submitModal'));
+        document.getElementById('confirmSubmit').addEventListener('click', () => this.submitPuzzle());
         document.getElementById('copyLinkBtn').addEventListener('click', () => this.copyShareLink());
 
         // Close modals when clicking outside
@@ -149,6 +156,7 @@ class PuzzleCreator {
         const messageEl = document.getElementById('validationMessage');
         const testBtn = document.getElementById('testBtn');
         const shareBtn = document.getElementById('shareBtn');
+        const submitBtn = document.getElementById('submitBtn');
 
         // Update group creators visual state
         document.querySelectorAll('.group-creator').forEach((creator, index) => {
@@ -165,20 +173,23 @@ class PuzzleCreator {
             messageEl.className = 'validation-message';
             if (validation.isValid) {
                 messageEl.className += ' success';
-                messageEl.textContent = '✅ Puzzle válido! Podes testá-lo ou partilhá-lo.';
+                messageEl.textContent = '✅ Puzzle válido! Podes testá-lo, partilhá-lo ou submetê-lo.';
                 testBtn.disabled = false;
                 shareBtn.disabled = false;
+                submitBtn.disabled = false;
             } else {
                 messageEl.className += ' error';
                 messageEl.textContent = '❌ ' + validation.errors.join(' ');
                 testBtn.disabled = true;
                 shareBtn.disabled = true;
+                submitBtn.disabled = true;
             }
         } else {
             messageEl.textContent = '';
             messageEl.className = 'validation-message';
             testBtn.disabled = true;
             shareBtn.disabled = true;
+            submitBtn.disabled = true;
         }
 
         return validation.isValid;
@@ -571,6 +582,60 @@ class PuzzleCreator {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    showSubmissionModal() {
+        if (!this.validatePuzzle()) {
+            alert('Por favor, corrige todos os problemas antes de submeter o puzzle.');
+            return;
+        }
+        this.showModal('submitModal');
+    }
+
+    async submitPuzzle() {
+        try {
+            // Collect form data
+            const creatorName = document.getElementById('creatorName').value.trim();
+            const creatorEmail = document.getElementById('creatorEmail').value.trim();
+            const puzzleTitle = document.getElementById('puzzleTitle').value.trim();
+            const puzzleDescription = document.getElementById('puzzleDescription').value.trim();
+
+            // Prepare puzzle data
+            const puzzleData = {
+                id: `custom-${Date.now()}`,
+                groups: this.groups.filter(group => 
+                    group.category.trim() && 
+                    group.words.every(word => word.trim())
+                )
+            };
+
+            // Prepare submission info
+            const submitterInfo = {
+                email: creatorEmail || 'Anónimo',
+                title: puzzleTitle || null,
+                description: puzzleDescription || null
+            };
+
+            // Submit to API
+            const api = new PuzzleSubmissionAPI();
+            const result = await api.submitPuzzle(puzzleData, submitterInfo);
+
+            if (result.success) {
+                alert('Puzzle submetido com sucesso! Será analisado em breve.');
+                this.closeModal('submitModal');
+                
+                // Clear form
+                document.getElementById('creatorName').value = '';
+                document.getElementById('creatorEmail').value = '';
+                document.getElementById('puzzleTitle').value = '';
+                document.getElementById('puzzleDescription').value = '';
+            } else {
+                throw new Error(result.error || 'Erro desconhecido');
+            }
+        } catch (error) {
+            console.error('Submission error:', error);
+            alert('Erro ao submeter puzzle. Por favor, tenta novamente.\n\nErro: ' + error.message);
         }
     }
 }

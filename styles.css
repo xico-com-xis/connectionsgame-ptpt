@@ -171,7 +171,6 @@ header h1 {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    margin-bottom: 20px;
 }
 
 .word-card {
@@ -320,7 +319,7 @@ header h1 {
     display: flex;
     gap: 15px;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .btn {
@@ -368,7 +367,6 @@ header h1 {
     font-weight: 500;
     padding: 10px;
     border-radius: 6px;
-    margin-bottom: 20px;
     opacity: 0;
     transition: all 0.3s ease;
 }
