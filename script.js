@@ -60,27 +60,13 @@ class ConnectionsGame {
                 this.puzzles = result.puzzles;
                 console.log('Successfully loaded puzzles from database:', this.puzzles);
             } else {
-                console.warn('Failed to load puzzles from database, falling back to static file');
-                // Fallback to static file if database fails
-                await this.loadStaticPuzzles();
+                console.warn('Failed to load puzzles from database');
+                // Fallback to empty puzzles object
+                this.puzzles = { easy: [], medium: [], hard: [], expert: [] };
             }
         } catch (error) {
             console.error('Error loading puzzles from database:', error);
-            // Fallback to static file
-            await this.loadStaticPuzzles();
-        }
-    }
-
-    async loadStaticPuzzles() {
-        try {
-            console.log('Loading puzzles from static file...');
-            const response = await fetch('puzzles.json');
-            const data = await response.json();
-            this.puzzles = data.puzzles;
-            console.log('Successfully loaded puzzles from static file');
-        } catch (error) {
-            console.error('Error loading static puzzles:', error);
-            // Ultimate fallback to empty puzzles object
+            // Fallback to empty puzzles object
             this.puzzles = { easy: [], medium: [], hard: [], expert: [] };
         }
     }

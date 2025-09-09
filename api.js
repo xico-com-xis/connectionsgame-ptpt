@@ -297,15 +297,7 @@ class PuzzleSubmissionAPI {
                 const errorData = await response.json();
                 console.error('Auth error:', errorData);
                 
-                // If user doesn't exist and it's an admin email, try to create them
-                if (errorData.error_description?.includes('Invalid login credentials')) {
-                    const adminCheck = await this.checkAdminStatus(email, this.supabaseKey);
-                    if (adminCheck) {
-                        console.log('Admin user exists in admin_users but not in auth, attempting signup...');
-                        return await this.signupAndLogin(email, password);
-                    }
-                }
-                
+                // Don't attempt signup - only existing auth users can login
                 throw new Error(errorData.error_description || 'Invalid login credentials');
             }
 
@@ -336,39 +328,6 @@ class PuzzleSubmissionAPI {
             return user;
         } catch (error) {
             console.error('Login error:', error);
-            throw error;
-        }
-    }
-
-    async signupAndLogin(email, password) {
-        try {
-            console.log('Attempting to create admin user account for:', email);
-            
-            // Create the user account
-            const signupResponse = await fetch(`${this.authUrl}/signup`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': this.supabaseKey
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
-            });
-
-            if (!signupResponse.ok) {
-                const errorData = await signupResponse.json();
-                throw new Error(errorData.error_description || 'Failed to create admin account');
-            }
-
-            const signupData = await signupResponse.json();
-            console.log('Admin account created, attempting login...');
-            
-            // Now try to login
-            return await this.login(email, password);
-        } catch (error) {
-            console.error('Signup error:', error);
             throw error;
         }
     }
