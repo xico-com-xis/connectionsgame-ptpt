@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexões - Jogo de Palavras Português</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-tabs">
+                <a href="index.html" class="nav-tab active">
+                    Jogar
+                </a>
+                <a href="create.html" class="nav-tab">
+                    Criar
+                </a>
+            </div>
+        </nav>
+
+        <header>
+            <h1>Conexões</h1>
+            <p class="subtitle">Encontra grupos de quatro palavras que partilham algo em comum</p>
+        </header>
+
+        <main class="game-board">
+            <div class="puzzle-info">
+                <div class="puzzle-navigation">
+                    <button class="nav-arrow" id="prevPuzzleBtn" title="Puzzle Anterior">‹</button>
+                    <div class="puzzle-number">Conexões #1</div>
+                    <button class="nav-arrow" id="nextPuzzleBtn" title="Próximo Puzzle">›</button>
+                </div>
+                <div class="mistakes">
+                    <span>Erros restantes: </span>
+                    <div class="mistake-dots">
+                        <span class="dot active"></span>
+                        <span class="dot active"></span>
+                        <span class="dot active"></span>
+                        <span class="dot active"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="word-grid" id="wordGrid">
+                <!-- Words will be dynamically inserted here -->
+            </div>
+
+            <div class="solved-groups" id="solvedGroups">
+                <!-- Solved groups will appear here -->
+            </div>
+
+            <div class="game-controls">
+                <button class="btn btn-secondary" id="shuffleBtn">Embaralhar</button>
+                <button class="btn btn-secondary" id="deselectBtn">Desselecionar Tudo</button>
+                <button class="btn btn-primary" id="submitBtn" disabled>Submeter</button>
+            </div>
+
+            <div class="difficulty-selector">
+                <label for="difficultySelect">Dificuldade:</label>
+                <select id="difficultySelect" class="difficulty-dropdown">
+                    <option value="mixed">Misto</option>
+                    <option value="easy">Fácil</option>
+                    <option value="medium">Médio</option>
+                    <option value="hard">Difícil</option>
+                    <option value="expert">Muito Difícil</option>
+                </select>
+            </div>
+
+            <div class="game-message" id="gameMessage"></div>
+        </main>
+
+        <div class="game-over-modal" id="gameOverModal">
+            <div class="modal-content">
+                <h2 id="gameOverTitle"></h2>
+                <div class="final-groups" id="finalGroups"></div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="newGameBtn">Novo Jogo</button>
+                    <button class="btn btn-secondary" id="shareBtn">Partilhar</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="instructions">
+                <h3>Como Jogar:</h3>
+                <ol>
+                    <li>Escolhe o nível de dificuldade no menu acima</li>
+                    <li>Encontra grupos de 4 palavras que partilham uma característica comum</li>
+                    <li>Seleciona 4 palavras e clica em "Submeter"</li>
+                    <li>Tens apenas 4 tentativas erradas antes do jogo terminar</li>
+                    <li><strong>Níveis de Dificuldade:</strong>
+                        <ul>
+                            <li><strong>Fácil</strong> - Categorias básicas e óbvias</li>
+                            <li><strong>Médio</strong> - Requer conhecimento geral</li>
+                            <li><strong>Difícil</strong> - Conhecimento cultural português</li>
+                            <li><strong>Muito Difícil</strong> - Conhecimento especializado</li>
+                            <li><strong>Misto</strong> - Combinação de todos os níveis</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

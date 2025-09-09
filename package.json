@@ -1,0 +1,32 @@
+{
+  "name": "connectionsgame-ptpt",
+  "version": "1.0.0",
+  "description": "Uma versão portuguesa do popular jogo Connections",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve .",
+    "dev": "npx live-server ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xico-com-xis/connectionsgame-ptpt.git"
+  },
+  "keywords": [
+    "jogo",
+    "palavras",
+    "português",
+    "connections",
+    "puzzle",
+    "pt-pt"
+  ],
+  "author": "xico-com-xis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xico-com-xis/connectionsgame-ptpt/issues"
+  },
+  "homepage": "https://github.com/xico-com-xis/connectionsgame-ptpt#readme",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

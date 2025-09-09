@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Puzzle - Conexões</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="create-styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-tabs">
+                <a href="index.html" class="nav-tab">
+                    Jogar
+                </a>
+                <a href="create.html" class="nav-tab active">
+                    Criar
+                </a>
+            </div>
+        </nav>
+
+        <header>
+            <h1>Criar Puzzle Personalizado</h1>
+            <p class="subtitle">Cria o teu próprio puzzle de Conexões</p>
+        </header>
+
+        <main class="create-container">
+            <!-- Group Creator -->
+            <div class="groups-section">
+                <h2>Grupos (4 grupos necessários)</h2>
+                
+                <div class="group-creator" data-group="0">
+                    <div class="group-header">
+                        <label for="category-0">Grupo 1 - Categoria:</label>
+                        <select class="difficulty-select" data-group="0">
+                            <option value="easy">Fácil</option>
+                            <option value="medium" selected>Médio</option>
+                            <option value="hard">Difícil</option>
+                            <option value="expert">Muito Difícil</option>
+                        </select>
+                    </div>
+                    <input type="text" id="category-0" class="category-input" placeholder="Nome da categoria (ex: Animais)" maxlength="50">
+                    <div class="words-container">
+                        <input type="text" class="word-input" placeholder="Palavra 1" maxlength="20" data-word="0">
+                        <input type="text" class="word-input" placeholder="Palavra 2" maxlength="20" data-word="1">
+                        <input type="text" class="word-input" placeholder="Palavra 3" maxlength="20" data-word="2">
+                        <input type="text" class="word-input" placeholder="Palavra 4" maxlength="20" data-word="3">
+                    </div>
+                </div>
+
+                <div class="group-creator" data-group="1">
+                    <div class="group-header">
+                        <label for="category-1">Grupo 2 - Categoria:</label>
+                        <select class="difficulty-select" data-group="1">
+                            <option value="easy">Fácil</option>
+                            <option value="medium" selected>Médio</option>
+                            <option value="hard">Difícil</option>
+                            <option value="expert">Muito Difícil</option>
+                        </select>
+                    </div>
+                    <input type="text" id="category-1" class="category-input" placeholder="Nome da categoria" maxlength="50">
+                    <div class="words-container">
+                        <input type="text" class="word-input" placeholder="Palavra 1" maxlength="20" data-word="0">
+                        <input type="text" class="word-input" placeholder="Palavra 2" maxlength="20" data-word="1">
+                        <input type="text" class="word-input" placeholder="Palavra 3" maxlength="20" data-word="2">
+                        <input type="text" class="word-input" placeholder="Palavra 4" maxlength="20" data-word="3">
+                    </div>
+                </div>
+
+                <div class="group-creator" data-group="2">
+                    <div class="group-header">
+                        <label for="category-2">Grupo 3 - Categoria:</label>
+                        <select class="difficulty-select" data-group="2">
+                            <option value="easy">Fácil</option>
+                            <option value="medium" selected>Médio</option>
+                            <option value="hard">Difícil</option>
+                            <option value="expert">Muito Difícil</option>
+                        </select>
+                    </div>
+                    <input type="text" id="category-2" class="category-input" placeholder="Nome da categoria" maxlength="50">
+                    <div class="words-container">
+                        <input type="text" class="word-input" placeholder="Palavra 1" maxlength="20" data-word="0">
+                        <input type="text" class="word-input" placeholder="Palavra 2" maxlength="20" data-word="1">
+                        <input type="text" class="word-input" placeholder="Palavra 3" maxlength="20" data-word="2">
+                        <input type="text" class="word-input" placeholder="Palavra 4" maxlength="20" data-word="3">
+                    </div>
+                </div>
+
+                <div class="group-creator" data-group="3">
+                    <div class="group-header">
+                        <label for="category-3">Grupo 4 - Categoria:</label>
+                        <select class="difficulty-select" data-group="3">
+                            <option value="easy">Fácil</option>
+                            <option value="medium" selected>Médio</option>
+                            <option value="hard">Difícil</option>
+                            <option value="expert">Muito Difícil</option>
+                        </select>
+                    </div>
+                    <input type="text" id="category-3" class="category-input" placeholder="Nome da categoria" maxlength="50">
+                    <div class="words-container">
+                        <input type="text" class="word-input" placeholder="Palavra 1" maxlength="20" data-word="0">
+                        <input type="text" class="word-input" placeholder="Palavra 2" maxlength="20" data-word="1">
+                        <input type="text" class="word-input" placeholder="Palavra 3" maxlength="20" data-word="2">
+                        <input type="text" class="word-input" placeholder="Palavra 4" maxlength="20" data-word="3">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section">
+                <h2>Pré-visualização</h2>
+                <div class="preview-grid" id="previewGrid">
+                    <!-- Words will be dynamically added here -->
+                </div>
+                <div class="validation-message" id="validationMessage"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="actions-section">
+                <button id="validateBtn" class="btn btn-secondary">Validar Puzzle</button>
+                <button id="testBtn" class="btn btn-primary" disabled>Testar Puzzle</button>
+                <button id="shareBtn" class="btn btn-success" disabled>Partilhar Puzzle</button>
+                <button id="clearBtn" class="btn btn-danger">Limpar Tudo</button>
+            </div>
+
+            <!-- Instructions -->
+            <div class="instructions">
+                <h3>Instruções:</h3>
+                <ul>
+                    <li>Cada grupo deve ter exatamente 4 palavras únicas</li>
+                    <li>Todas as 16 palavras devem ser diferentes</li>
+                    <li>As categorias devem ser claras e específicas</li>
+                    <li>Evita palavras muito longas ou complexas</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- Test Modal -->
+    <div id="testModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Testar o Teu Puzzle</h2>
+                <button class="close-btn" id="closeTestModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="testGame">
+                    <!-- Test game will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Partilhar Puzzle</h2>
+                <button class="close-btn" id="closeShareModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>O teu puzzle foi criado! Podes partilhá-lo através do link abaixo:</p>
+                <div class="share-link-container">
+                    <input type="text" id="shareLink" class="share-link" readonly>
+                    <button id="copyLinkBtn" class="btn btn-primary">Copiar Link</button>
+                </div>
+                <p class="share-note">Este link irá carregar o teu puzzle personalizado para qualquer pessoa jogar!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="create-script.js"></script>
+</body>
+</html>
