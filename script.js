@@ -12,6 +12,7 @@ class ConnectionsGame {
         this.gameEnded = false;
         this.allWords = [];
         this.isCustomPuzzle = false; // Track if playing a custom puzzle
+        this.api = new PuzzleSubmissionAPI(); // Initialize API for database access
 
         this.checkForCustomPuzzle().then(() => {
             this.loadPuzzles().then(() => {
@@ -52,12 +53,34 @@ class ConnectionsGame {
         }
 
         try {
+            console.log('Loading puzzles from database...');
+            const result = await this.api.getApprovedPuzzles();
+            
+            if (result.success && result.puzzles) {
+                this.puzzles = result.puzzles;
+                console.log('Successfully loaded puzzles from database:', this.puzzles);
+            } else {
+                console.warn('Failed to load puzzles from database, falling back to static file');
+                // Fallback to static file if database fails
+                await this.loadStaticPuzzles();
+            }
+        } catch (error) {
+            console.error('Error loading puzzles from database:', error);
+            // Fallback to static file
+            await this.loadStaticPuzzles();
+        }
+    }
+
+    async loadStaticPuzzles() {
+        try {
+            console.log('Loading puzzles from static file...');
             const response = await fetch('puzzles.json');
             const data = await response.json();
             this.puzzles = data.puzzles;
+            console.log('Successfully loaded puzzles from static file');
         } catch (error) {
-            console.error('Error loading puzzles:', error);
-            // Fallback to empty puzzles object
+            console.error('Error loading static puzzles:', error);
+            // Ultimate fallback to empty puzzles object
             this.puzzles = { easy: [], medium: [], hard: [], expert: [] };
         }
     }
@@ -235,7 +258,6 @@ class ConnectionsGame {
         document.getElementById('deselectBtn').addEventListener('click', () => this.deselectAll());
         document.getElementById('submitBtn').addEventListener('click', () => this.submitGuess());
         document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
-        document.getElementById('shareBtn').addEventListener('click', () => this.shareResults());
         document.getElementById('difficultySelect').addEventListener('change', (e) => this.changeDifficulty(e.target.value));
         document.getElementById('prevPuzzleBtn').addEventListener('click', () => this.navigatePuzzle(-1));
         document.getElementById('nextPuzzleBtn').addEventListener('click', () => this.navigatePuzzle(1));
@@ -589,26 +611,6 @@ class ConnectionsGame {
         this.initializeGame();
     }
 
-    shareResults() {
-        const won = this.solvedGroups.length === 4 && this.mistakesRemaining > 0;
-        const mistakesMade = 4 - this.mistakesRemaining;
-        
-        let shareText = `Conexões #${this.currentPuzzle.id}\n`;
-        shareText += won ? `✅ Resolvido em ${mistakesMade} erro(s)!\n` : `❌ Não consegui resolver\n`;
-        shareText += '\n🟨🟩🟦🟪\n';
-        shareText += '\nJoga em: [URL do teu site]';
-
-        if (navigator.share) {
-            navigator.share({
-                title: 'Conexões - Jogo de Palavras',
-                text: shareText
-            });
-        } else {
-            navigator.clipboard.writeText(shareText).then(() => {
-                this.showMessage('Resultado copiado para a área de transferência!', 'info');
-            });
-        }
-    }
 }
 
 // Initialize game when page loads
