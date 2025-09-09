@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração - Conexões</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-tabs">
+                <a href="index.html" class="nav-tab">
+                    Jogar
+                </a>
+                <a href="create.html" class="nav-tab">
+                    Criar
+                </a>
+                <a href="admin.html" class="nav-tab active">
+                    Admin
+                </a>
+            </div>
+        </nav>
+
+        <header>
+            <h1>Painel de Administração</h1>
+            <p class="subtitle">Gerir submissões de puzzles da comunidade</p>
+        </header>
+
+        <main class="admin-container">
+            <!-- Authentication Section -->
+            <div id="authSection" class="auth-section">
+                <div class="auth-card">
+                    <h2>Acesso de Administrador</h2>
+                    <p>Introduz as tuas credenciais para aceder ao painel de administração.</p>
+                    <form id="loginForm">
+                        <input type="email" id="adminEmail" placeholder="Email de administrador" required>
+                        <input type="password" id="adminPassword" placeholder="Password" required>
+                        <button type="submit" class="btn btn-primary">Entrar</button>
+                    </form>
+                    <div id="authMessage" class="auth-message"></div>
+                </div>
+            </div>
+
+            <!-- Admin Panel (hidden until authenticated) -->
+            <div id="adminPanel" class="admin-panel" style="display: none;">
+                <!-- Summary Stats -->
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="pendingCount">0</div>
+                        <div class="stat-label">Submissões Pendentes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="approvedCount">0</div>
+                        <div class="stat-label">Puzzles Aprovados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">Total de Submissões</div>
+                    </div>
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="admin-controls">
+                    <div class="filter-group">
+                        <label for="statusFilter">Filtrar por estado:</label>
+                        <select id="statusFilter">
+                            <option value="pending">Pendentes</option>
+                            <option value="approved">Aprovados</option>
+                            <option value="rejected">Rejeitados</option>
+                            <option value="all">Todos</option>
+                        </select>
+                    </div>
+                    <button id="refreshBtn" class="btn btn-secondary">Atualizar</button>
+                    <button id="logoutBtn" class="btn btn-danger">Sair</button>
+                </div>
+
+                <!-- Submissions List -->
+                <div class="submissions-section">
+                    <h2>Submissões de Puzzles</h2>
+                    <div id="submissionsList" class="submissions-list">
+                        <!-- Submissions will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Review Modal -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Rever Submissão</h2>
+                <button class="close-btn" id="closeReviewModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="reviewContent">
+                    <!-- Review content will be loaded here -->
+                </div>
+                <div class="review-actions">
+                    <textarea id="adminNotes" placeholder="Notas do administrador (opcional)" rows="3"></textarea>
+                    <div class="action-buttons">
+                        <button id="approveBtn" class="btn btn-success">Aprovar</button>
+                        <button id="rejectBtn" class="btn btn-danger">Rejeitar</button>
+                        <button id="cancelReviewBtn" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="admin-script.js"></script>
+</body>
+</html>
