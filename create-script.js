@@ -97,7 +97,12 @@ class PuzzleCreator {
             const wordDiv = document.createElement('div');
             wordDiv.className = `preview-word difficulty-${wordObj.difficulty}`;
             wordDiv.textContent = wordObj.word;
+            
+            // Adjust font size before adding to DOM to prevent visual jump
+            wordDiv.style.visibility = 'hidden';
             previewGrid.appendChild(wordDiv);
+            this.adjustFontSize(wordDiv);
+            wordDiv.style.visibility = 'visible';
         });
 
         // Fill empty slots
@@ -109,6 +114,50 @@ class PuzzleCreator {
             emptyDiv.style.opacity = '0.3';
             previewGrid.appendChild(emptyDiv);
         }
+    }
+
+    adjustFontSize(element) {
+        // Get the available width (element width minus padding)
+        const style = getComputedStyle(element);
+        const paddingHorizontal = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+        const maxWidth = element.clientWidth - paddingHorizontal;
+        
+        // Determine starting font size based on screen width
+        const isMobile = window.innerWidth <= 768;
+        const isSmallMobile = window.innerWidth <= 480;
+        let startingFontSize = isSmallMobile ? 0.7 : (isMobile ? 0.75 : 0.9);
+        
+        // Create a temporary span to measure text width
+        const span = document.createElement('span');
+        span.style.cssText = `
+            visibility: hidden;
+            position: absolute;
+            white-space: nowrap;
+            font-family: ${style.fontFamily};
+            font-weight: 600;
+            text-transform: uppercase;
+            top: -9999px;
+        `;
+        span.textContent = element.textContent;
+        document.body.appendChild(span);
+        
+        // Binary search for optimal font size
+        let minSize = 0.5; // Lower minimum for mobile
+        let maxSize = startingFontSize;
+        
+        while (maxSize - minSize > 0.01) {
+            const fontSize = (minSize + maxSize) / 2;
+            span.style.fontSize = fontSize + 'rem';
+            
+            if (span.clientWidth <= maxWidth) {
+                minSize = fontSize;
+            } else {
+                maxSize = fontSize;
+            }
+        }
+        
+        element.style.fontSize = minSize + 'rem';
+        document.body.removeChild(span);
     }
 
     checkDuplicates() {
@@ -350,8 +399,13 @@ class PuzzleCreator {
     }
 
     setupTestGameListeners() {
-        // Word selection
+        // Word selection and font adjustment
         document.querySelectorAll('.test-word-card').forEach(card => {
+            // Adjust font size immediately to prevent visual jump
+            card.style.visibility = 'hidden';
+            this.adjustFontSize(card);
+            card.style.visibility = 'visible';
+            
             card.addEventListener('click', () => this.selectTestWord(card));
         });
 
@@ -361,7 +415,13 @@ class PuzzleCreator {
             this.shuffleArray(wordCards);
             const grid = document.getElementById('testWordGrid');
             grid.innerHTML = '';
-            wordCards.forEach(card => grid.appendChild(card));
+            wordCards.forEach(card => {
+                // Adjust font size before making visible to prevent jump
+                card.style.visibility = 'hidden';
+                grid.appendChild(card);
+                this.adjustFontSize(card);
+                card.style.visibility = 'visible';
+            });
             this.setupTestGameListeners(); // Re-attach listeners
         });
 
@@ -679,6 +739,18 @@ const testGameStyles = `
     cursor: pointer;
     transition: all 0.3s ease;
     user-select: none;
+    height: 80px;
+    min-height: 80px;
+    max-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    word-break: keep-all;
+    hyphens: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .test-word-card:hover {
@@ -735,7 +807,6 @@ const testGameStyles = `
 .test-solved-group.difficulty-easy { background: #fff3cd; border-color: #ffeaa7; }
 .test-solved-group.difficulty-medium { background: #d4edda; border-color: #98fb98; }
 .test-solved-group.difficulty-hard { background: #cce5ff; border-color: #74b9ff; }
-.test-solved-group.difficulty-expert { background: #e6ccff; border-color: #a29bfe; }
 
 .test-group-category {
     font-weight: 600;
@@ -766,7 +837,6 @@ const testGameStyles = `
 .test-group.difficulty-easy { background: #fff3cd; }
 .test-group.difficulty-medium { background: #d4edda; }
 .test-group.difficulty-hard { background: #cce5ff; }
-.test-group.difficulty-expert { background: #e6ccff; }
 
 @media (max-width: 768px) {
     .test-word-grid {

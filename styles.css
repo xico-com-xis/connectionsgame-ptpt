@@ -188,6 +188,18 @@ header h1 {
     user-select: none;
     position: relative;
     overflow: hidden;
+    height: 80px;
+    min-height: 80px;
+    max-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    word-break: keep-all;
+    hyphens: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .word-card:hover {
@@ -237,23 +249,40 @@ header h1 {
     }
 }
 
+/* Colors based on solve order (1st, 2nd, 3rd, 4th) instead of difficulty */
+.solved-group.solve-order-0 {
+    background-color: #f1c40f; /* Yellow */
+    color: #2c3e50;
+}
+
+.solved-group.solve-order-1 {
+    background-color: #27ae60; /* Green */
+    color: white;
+}
+
+.solved-group.solve-order-2 {
+    background-color: #e74c3c; /* Red */
+    color: white;
+}
+
+.solved-group.solve-order-3 {
+    background-color: #9b59b6; /* Purple */
+    color: white;
+}
+
+/* Keep difficulty classes for backwards compatibility, but with distinct colors */
 .solved-group.difficulty-easy {
-    background-color: #f1c40f;
+    background-color: #f1c40f; /* Yellow */
     color: #2c3e50;
 }
 
 .solved-group.difficulty-medium {
-    background-color: #27ae60;
+    background-color: #27ae60; /* Green */
     color: white;
 }
 
 .solved-group.difficulty-hard {
-    background-color: #3498db;
-    color: white;
-}
-
-.solved-group.difficulty-expert {
-    background-color: #9b59b6;
+    background-color: #e74c3c; /* Red */
     color: white;
 }
 
@@ -472,12 +501,20 @@ header h1 {
     }
     
     .word-grid {
-        gap: 8px;
+        gap: 6px;
     }
     
     .word-card {
-        padding: 15px 10px;
-        font-size: 0.85rem;
+        padding: 12px 8px;
+        font-size: 0.75rem;
+        height: 60px;
+        min-height: 60px;
+        max-height: 60px;
+        word-break: keep-all;
+        hyphens: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     .game-controls {
@@ -530,7 +567,15 @@ header h1 {
 
 @media (max-width: 480px) {
     .word-grid {
-        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+    }
+    
+    .word-card {
+        padding: 10px 6px;
+        font-size: 0.7rem;
+        height: 50px;
+        min-height: 50px;
+        max-height: 50px;
     }
     
     .game-controls {

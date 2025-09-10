@@ -255,7 +255,7 @@ class AdminInterface {
             : submission.puzzle_data;
 
         const previewGroups = puzzleData.groups.map((group, index) => {
-            const difficulties = ['easy', 'medium', 'hard', 'expert'];
+            const difficulties = ['easy', 'medium', 'hard'];
             return `
                 <div class="preview-group difficulty-${difficulties[index] || 'easy'}">
                     <div class="preview-category">${group.category}</div>
@@ -306,8 +306,8 @@ class AdminInterface {
     }
 
     createDetailedPreview(puzzleData) {
-        const difficulties = ['easy', 'medium', 'hard', 'expert'];
-        const difficultyLabels = ['Fácil', 'Médio', 'Difícil', 'Expert'];
+        const difficulties = ['easy', 'medium', 'hard'];
+        const difficultyLabels = ['Fácil', 'Médio', 'Difícil'];
         
         return puzzleData.groups.map((group, index) => `
             <div class="preview-group difficulty-${difficulties[index] || 'easy'}">

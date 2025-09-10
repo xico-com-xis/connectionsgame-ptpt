@@ -241,7 +241,6 @@
 .preview-group.difficulty-easy { border-left: 4px solid #ffc107; }
 .preview-group.difficulty-medium { border-left: 4px solid #28a745; }
 .preview-group.difficulty-hard { border-left: 4px solid #007bff; }
-.preview-group.difficulty-expert { border-left: 4px solid #6f42c1; }
 
 .preview-category {
     font-weight: 600;

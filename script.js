@@ -48,7 +48,7 @@ class ConnectionsGame {
     async loadPuzzles() {
         // Skip loading if we have a custom puzzle
         if (this.isCustomPuzzle) {
-            this.puzzles = { easy: [], medium: [], hard: [], expert: [] };
+            this.puzzles = { easy: [], medium: [], hard: [] };
             return;
         }
 
@@ -62,12 +62,12 @@ class ConnectionsGame {
             } else {
                 console.warn('Failed to load puzzles from database');
                 // Fallback to empty puzzles object
-                this.puzzles = { easy: [], medium: [], hard: [], expert: [] };
+                this.puzzles = { easy: [], medium: [], hard: [] };
             }
         } catch (error) {
             console.error('Error loading puzzles from database:', error);
             // Fallback to empty puzzles object
-            this.puzzles = { easy: [], medium: [], hard: [], expert: [] };
+            this.puzzles = { easy: [], medium: [], hard: [] };
         }
     }
 
@@ -116,7 +116,7 @@ class ConnectionsGame {
                     { category: "Teste", words: ["TESTE1", "TESTE2", "TESTE3", "TESTE4"], difficulty: "easy" },
                     { category: "Teste", words: ["TESTE5", "TESTE6", "TESTE7", "TESTE8"], difficulty: "medium" },
                     { category: "Teste", words: ["TESTE9", "TESTE10", "TESTE11", "TESTE12"], difficulty: "hard" },
-                    { category: "Teste", words: ["TESTE13", "TESTE14", "TESTE15", "TESTE16"], difficulty: "expert" }
+                    { category: "Teste", words: ["TESTE13", "TESTE14", "TESTE15", "TESTE16"], difficulty: "hard" }
                 ]
             }];
             this.currentAvailableIndex = 0;
@@ -146,7 +146,7 @@ class ConnectionsGame {
             
             // Try to get one group from each difficulty if possible
             const selectedGroups = [];
-            const difficulties = ['easy', 'medium', 'hard', 'expert'];
+            const difficulties = ['easy', 'medium', 'hard'];
             
             // First, try to get one from each difficulty
             difficulties.forEach(diff => {
@@ -281,10 +281,60 @@ class ConnectionsGame {
             wordCard.dataset.word = wordObj.word;
             wordCard.dataset.group = wordObj.group;
             wordCard.dataset.difficulty = wordObj.difficulty;
+            
+            // Adjust font size before adding to DOM to prevent visual jump
+            wordCard.style.visibility = 'hidden';
+            wordGrid.appendChild(wordCard);
+            this.adjustFontSize(wordCard);
+            wordCard.style.visibility = 'visible';
 
             wordCard.addEventListener('click', () => this.selectWord(wordCard));
-            wordGrid.appendChild(wordCard);
         });
+    }
+
+    adjustFontSize(element) {
+        // Get the available width (element width minus padding)
+        const style = getComputedStyle(element);
+        const paddingHorizontal = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+        const maxWidth = element.clientWidth - paddingHorizontal;
+        
+        // Determine starting font size based on screen width
+        const isMobile = window.innerWidth <= 600;
+        const isSmallMobile = window.innerWidth <= 480;
+        let startingFontSize = isSmallMobile ? 0.7 : (isMobile ? 0.75 : 0.95);
+        
+        // Create a temporary span to measure text width
+        const span = document.createElement('span');
+        span.style.cssText = `
+            visibility: hidden;
+            position: absolute;
+            white-space: nowrap;
+            font-family: ${style.fontFamily};
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            top: -9999px;
+        `;
+        span.textContent = element.textContent;
+        document.body.appendChild(span);
+        
+        // Binary search for optimal font size
+        let minSize = 0.5; // Lower minimum for mobile
+        let maxSize = startingFontSize;
+        
+        while (maxSize - minSize > 0.01) {
+            const fontSize = (minSize + maxSize) / 2;
+            span.style.fontSize = fontSize + 'rem';
+            
+            if (span.clientWidth <= maxWidth) {
+                minSize = fontSize;
+            } else {
+                maxSize = fontSize;
+            }
+        }
+        
+        element.style.fontSize = minSize + 'rem';
+        document.body.removeChild(span);
     }
 
     selectWord(wordCard) {
@@ -382,9 +432,9 @@ class ConnectionsGame {
         const container = document.getElementById('solvedGroups');
         container.innerHTML = '';
 
-        this.solvedGroups.forEach(group => {
+        this.solvedGroups.forEach((group, index) => {
             const groupDiv = document.createElement('div');
-            groupDiv.className = `solved-group difficulty-${group.difficulty}`;
+            groupDiv.className = `solved-group solve-order-${index} difficulty-${group.difficulty}`;
             
             groupDiv.innerHTML = `
                 <div class="group-category">${group.category}</div>
@@ -407,8 +457,7 @@ class ConnectionsGame {
             'mixed': 'Misto',
             'easy': 'Fácil',
             'medium': 'Médio',
-            'hard': 'Difícil',
-            'expert': 'Muito Difícil'
+            'hard': 'Difícil'
         };
         
         let displayText;
@@ -490,9 +539,9 @@ class ConnectionsGame {
             title.textContent = 'Parabéns! Completaste o puzzle!';
             // Show all groups in final results for won games
             finalGroups.innerHTML = '';
-            this.currentPuzzle.groups.forEach(group => {
+            this.currentPuzzle.groups.forEach((group, index) => {
                 const groupDiv = document.createElement('div');
-                groupDiv.className = `solved-group difficulty-${group.difficulty}`;
+                groupDiv.className = `solved-group solve-order-${index} difficulty-${group.difficulty}`;
                 groupDiv.innerHTML = `
                     <div class="group-category">${group.category}</div>
                     <div class="group-words">${group.words.join(', ')}</div>
@@ -505,9 +554,9 @@ class ConnectionsGame {
             finalGroups.innerHTML = '';
             
             // Show only solved groups
-            this.solvedGroups.forEach(group => {
+            this.solvedGroups.forEach((group, index) => {
                 const groupDiv = document.createElement('div');
-                groupDiv.className = `solved-group difficulty-${group.difficulty}`;
+                groupDiv.className = `solved-group solve-order-${index} difficulty-${group.difficulty}`;
                 groupDiv.innerHTML = `
                     <div class="group-category">${group.category}</div>
                     <div class="group-words">${group.words.join(', ')}</div>
@@ -547,9 +596,11 @@ class ConnectionsGame {
             !this.solvedGroups.includes(group)
         );
         
-        unsolvedGroups.forEach(group => {
+        unsolvedGroups.forEach((group, index) => {
             const groupDiv = document.createElement('div');
-            groupDiv.className = `solved-group difficulty-${group.difficulty}`;
+            // Use the solve order based on where this group appears in the overall puzzle
+            const groupIndex = this.currentPuzzle.groups.indexOf(group);
+            groupDiv.className = `solved-group solve-order-${groupIndex} difficulty-${group.difficulty}`;
             groupDiv.innerHTML = `
                 <div class="group-category">${group.category}</div>
                 <div class="group-words">${group.words.join(', ')}</div>

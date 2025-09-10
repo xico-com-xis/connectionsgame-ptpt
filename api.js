@@ -66,8 +66,7 @@ class PuzzleSubmissionAPI {
             const groupedPuzzles = {
                 easy: [],
                 medium: [],
-                hard: [],
-                expert: []
+                hard: []
             };
 
             puzzles.forEach(puzzle => {
