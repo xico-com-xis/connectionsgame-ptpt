@@ -537,11 +537,13 @@ class ConnectionsGame {
 
         if (won) {
             title.textContent = 'Parabéns! Completaste o puzzle!';
-            // Show all groups in final results for won games
+            // Show all groups in final results for won games - use original index
             finalGroups.innerHTML = '';
-            this.currentPuzzle.groups.forEach((group, index) => {
+            this.solvedGroups.forEach((group, index) => {
                 const groupDiv = document.createElement('div');
-                groupDiv.className = `solved-group solve-order-${index} difficulty-${group.difficulty}`;
+                // Use original index in puzzle for consistent coloring
+                const originalIndex = this.currentPuzzle.groups.indexOf(group);
+                groupDiv.className = `solved-group solve-order-${originalIndex} difficulty-${group.difficulty}`;
                 groupDiv.innerHTML = `
                     <div class="group-category">${group.category}</div>
                     <div class="group-words">${group.words.join(', ')}</div>
@@ -556,7 +558,9 @@ class ConnectionsGame {
             // Show only solved groups
             this.solvedGroups.forEach((group, index) => {
                 const groupDiv = document.createElement('div');
-                groupDiv.className = `solved-group solve-order-${index} difficulty-${group.difficulty}`;
+                // Use original index in puzzle for consistent coloring
+                const originalIndex = this.currentPuzzle.groups.indexOf(group);
+                groupDiv.className = `solved-group solve-order-${originalIndex} difficulty-${group.difficulty}`;
                 groupDiv.innerHTML = `
                     <div class="group-category">${group.category}</div>
                     <div class="group-words">${group.words.join(', ')}</div>
@@ -596,11 +600,11 @@ class ConnectionsGame {
             !this.solvedGroups.includes(group)
         );
         
-        unsolvedGroups.forEach((group, index) => {
+        unsolvedGroups.forEach((group) => {
             const groupDiv = document.createElement('div');
-            // Use the solve order based on where this group appears in the overall puzzle
-            const groupIndex = this.currentPuzzle.groups.indexOf(group);
-            groupDiv.className = `solved-group solve-order-${groupIndex} difficulty-${group.difficulty}`;
+            // Use the group's original index in the puzzle for consistent coloring
+            const originalIndex = this.currentPuzzle.groups.indexOf(group);
+            groupDiv.className = `solved-group solve-order-${originalIndex} difficulty-${group.difficulty}`;
             groupDiv.innerHTML = `
                 <div class="group-category">${group.category}</div>
                 <div class="group-words">${group.words.join(', ')}</div>
