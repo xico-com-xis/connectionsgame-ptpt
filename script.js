@@ -654,7 +654,199 @@ class ConnectionsGame {
 
 }
 
+// Feedback Modal Functionality
+class FeedbackModal {
+    constructor(api) {
+        this.modal = document.getElementById('feedbackModal');
+        this.api = api; // Store reference to the API instance
+        this.setupEventListeners();
+        this.checkUrlParameter();
+    }
+    
+    checkUrlParameter() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('feedback') === '1') {
+            // Remove the parameter from URL and show modal
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setTimeout(() => this.show(), 100);
+        }
+    }
+
+    setupEventListeners() {
+        // Open modal
+        document.getElementById('feedbackBtn').addEventListener('click', () => {
+            this.show();
+        });
+
+        // Close modal
+        document.getElementById('closeFeedbackBtn').addEventListener('click', () => {
+            this.hide();
+        });
+
+        document.getElementById('cancelFeedbackBtn').addEventListener('click', () => {
+            this.hide();
+        });
+
+        // Click outside modal to close
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.hide();
+            }
+        });
+
+        // Submit feedback
+        document.getElementById('submitFeedbackBtn').addEventListener('click', () => {
+            this.submitFeedback();
+        });
+
+        // Escape key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal.classList.contains('show')) {
+                this.hide();
+            }
+        });
+    }
+
+    show() {
+        this.modal.style.display = 'block';
+        // Force reflow to ensure display change takes effect
+        this.modal.offsetHeight;
+        this.modal.classList.add('show');
+        
+        // Focus on the message textarea
+        setTimeout(() => {
+            document.getElementById('feedbackMessage').focus();
+        }, 150);
+        
+        // Track event with Google Analytics
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'feedback_modal_opened', {
+                event_category: 'engagement',
+                event_label: 'feedback'
+            });
+        }
+    }
+
+    hide() {
+        this.modal.classList.remove('show');
+        setTimeout(() => {
+            this.modal.style.display = 'none';
+            this.resetForm();
+        }, 300);
+    }
+
+    resetForm() {
+        document.getElementById('feedbackForm').reset();
+    }
+
+    async submitFeedback() {
+        const type = document.getElementById('feedbackType').value;
+        const message = document.getElementById('feedbackMessage').value.trim();
+        const email = document.getElementById('feedbackEmail').value.trim();
+
+        if (!message) {
+            alert('Por favor, escreve uma mensagem antes de enviar.');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitFeedbackBtn');
+        const originalText = submitBtn.textContent;
+        
+        try {
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'A enviar...';
+
+            // Submit directly to Supabase feedback table
+            const feedbackData = {
+                type: type,
+                message: message,
+                email: email || null
+                // Remove created_at - let database auto-generate it
+            };
+
+            console.log('Submitting feedback:', feedbackData); // Debug log
+
+            const response = await fetch(`${this.api.apiUrl}/feedback`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': this.api.supabaseKey,
+                    'Authorization': `Bearer ${this.api.supabaseKey}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(feedbackData)
+            });
+
+            console.log('Response status:', response.status); // Debug log
+            
+            if (response.ok) {
+                // Success - direct submission worked
+                alert('Obrigado pelo teu feedback! A mensagem foi enviada com sucesso.');
+                
+                // Track event with Google Analytics
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'feedback_submitted', {
+                        event_category: 'engagement',
+                        event_label: type,
+                        value: 1
+                    });
+                }
+                
+                this.hide();
+                return;
+            } else {
+                const errorData = await response.json();
+                console.error('Supabase error response:', errorData);
+                console.error('Response status:', response.status);
+                console.error('Response headers:', Object.fromEntries(response.headers.entries()));
+                throw new Error(`Database submission failed: ${errorData.message || 'Unknown error'}`);
+            }
+
+        } catch (error) {
+            console.error('Error submitting feedback to database:', error);
+            
+            // Fallback to email method
+            const subject = `Conexões - ${this.getFeedbackTypeLabel(type)}`;
+            const body = `Tipo: ${this.getFeedbackTypeLabel(type)}\n\n${message}\n\n${email ? `Email: ${email}\n\n` : ''}---\nEnviado através do jogo Conexões\nData: ${new Date().toLocaleString('pt-PT')}`;
+            const mailtoUrl = `mailto:xico.reasonzx@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            if (confirm('Erro no envio. Deseja abrir o cliente de email como alternativa?')) {
+                window.location.href = mailtoUrl;
+                
+                // Track fallback event
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'feedback_submitted_email_fallback', {
+                        event_category: 'engagement',
+                        event_label: type,
+                        value: 1
+                    });
+                }
+                
+                setTimeout(() => {
+                    alert('O teu cliente de email foi aberto com a mensagem preparada.');
+                    this.hide();
+                }, 500);
+            }
+        } finally {
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    }
+
+    getFeedbackTypeLabel(type) {
+        const labels = {
+            'suggestion': 'Sugestão',
+            'bug': 'Problema/Bug',
+            'other': 'Outro'
+        };
+        return labels[type] || 'Feedback';
+    }
+}
+
 // Initialize game when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new ConnectionsGame();
+    const game = new ConnectionsGame();
+    new FeedbackModal(game.api);
 });
